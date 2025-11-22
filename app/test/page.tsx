@@ -24,13 +24,15 @@ function TestContent() {
 
     const { isListening, startListening, error: voiceError } = useVoiceInput(handleAnswer, state.isPaused);
 
-    // Initial setup
+    // Initial setup - RUNS ONLY ONCE ON MOUNT
     useEffect(() => {
         nextTest();
         startListening();
         speak('検査をはじめます。開いている方向を教えてください。');
-    }, [nextTest, startListening, speak]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
+    // Handle finish state voice guidance
     useEffect(() => {
         if (state.isFinished) {
             if (state.eye === 'right') {
