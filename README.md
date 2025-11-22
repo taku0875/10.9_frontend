@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Me-Tore! Frontend (めトレ！ フロントエンド)
 
-## Getting Started
+「めトレ！」のフロントエンドアプリケーションです。Next.js (App Router) を使用しています。
 
-First, run the development server:
+## 前提条件 (Prerequisites)
+- Node.js 18以上
+
+## セットアップ (Setup)
+
+依存関係をインストールします。
+
+```bash
+npm install
+```
+
+## 起動方法 (How to Run)
+
+開発サーバーを起動します。
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで `http://localhost:3000` にアクセスしてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 機能 (Features)
+- **視力チェック**: 30cm/3mの距離を選択し、ランドルト環を用いた視力検査ができます。
+- **音声操作**: 「右」「左」「上」「下」と声に出して回答できます。
+- **音声ガイド**: 音声による操作案内があります。
+- **記録・ダッシュボード**: 測定結果を保存し、グラフで推移を確認できます。
+- **リマインダー**: 前回の測定から30日以上経過するとホーム画面にお知らせを表示します。
