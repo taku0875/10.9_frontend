@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import LandoltC from '@/components/LandoltC';
 import { useVisionTest, Direction } from '@/hooks/useVisionTest';
@@ -22,10 +22,15 @@ function TestContent() {
         answer(dir);
     };
 
-    const { isListening, startListening, error: voiceError } = useVoiceInput(handleAnswer, state.isPaused);
+    const { isListening, startListening, toggleListening, error: voiceError } = useVoiceInput(handleAnswer, state.isPaused);
+
+    const hasPlayedRef = useRef(false);
 
     // Initial setup - RUNS ONLY ONCE ON MOUNT
     useEffect(() => {
+        if (hasPlayedRef.current) return;
+        hasPlayedRef.current = true;
+
         nextTest();
         startListening();
         speak('検査をはじめます。開いている方向を教えてください。');
@@ -145,7 +150,14 @@ function TestContent() {
             {/* Controls */}
             <div className="w-full max-w-md p-4 pb-8 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)] relative">
                 {/* Support Buttons */}
-                <div className="absolute -top-12 right-4 flex gap-2">
+                <div className="absolute -top-14 right-4 flex gap-2">
+                    <button
+                        onClick={toggleListening}
+                        className={`p-3 rounded-full shadow-md transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-white text-gray-500 hover:text-[#0093D0]'}`}
+                        title={isListening ? "音声入力OFF" : "音声入力ON"}
+                    >
+                        {isListening ? '🎤' : '🎤'}
+                    </button>
                     <button
                         onClick={togglePause}
                         className="bg-white p-3 rounded-full shadow-md text-gray-500 hover:text-[#0093D0] transition-colors"

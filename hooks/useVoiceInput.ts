@@ -12,8 +12,9 @@ declare global {
 export const useVoiceInput = (onAnswer: (dir: Direction) => void, isPaused: boolean) => {
     const [isListening, setIsListening] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [recognition, setRecognition] = useState<any>(null);
 
-    const startListening = useCallback(() => {
+    useEffect(() => {
         if (typeof window === 'undefined') return;
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -22,16 +23,22 @@ export const useVoiceInput = (onAnswer: (dir: Direction) => void, isPaused: bool
             return;
         }
 
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'ja-JP';
-        recognition.continuous = true;
-        recognition.interimResults = false;
+        const recognitionInstance = new SpeechRecognition();
+        recognitionInstance.lang = 'ja-JP';
+        recognitionInstance.continuous = true;
+        recognitionInstance.interimResults = false;
 
-        recognition.onstart = () => setIsListening(true);
-        recognition.onend = () => setIsListening(false);
-        recognition.onerror = (event: any) => setError(event.error);
+        recognitionInstance.onstart = () => setIsListening(true);
+        recognitionInstance.onend = () => {
+            setIsListening(false);
+        };
+        recognitionInstance.onerror = (event: any) => {
+            console.error('Speech recognition error', event.error);
+            setError(event.error);
+            setIsListening(false);
+        };
 
-        recognition.onresult = (event: any) => {
+        recognitionInstance.onresult = (event: any) => {
             if (isPaused) return;
             const last = event.results.length - 1;
             const transcript = event.results[last][0].transcript.trim();
@@ -43,9 +50,32 @@ export const useVoiceInput = (onAnswer: (dir: Direction) => void, isPaused: bool
             else if (transcript.includes('右') || transcript.includes('みぎ')) onAnswer('right');
         };
 
-        recognition.start();
-        return () => recognition.stop();
+        setRecognition(recognitionInstance);
     }, [onAnswer, isPaused]);
 
-    return { isListening, error, startListening };
+    const startListening = useCallback(() => {
+        if (recognition && !isListening) {
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error("Failed to start recognition:", e);
+            }
+        }
+    }, [recognition, isListening]);
+
+    const stopListening = useCallback(() => {
+        if (recognition && isListening) {
+            recognition.stop();
+        }
+    }, [recognition, isListening]);
+
+    const toggleListening = useCallback(() => {
+        if (isListening) {
+            stopListening();
+        } else {
+            startListening();
+        }
+    }, [isListening, startListening, stopListening]);
+
+    return { isListening, error, startListening, stopListening, toggleListening };
 };
