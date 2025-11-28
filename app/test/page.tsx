@@ -18,6 +18,9 @@ function TestContent() {
     const [saved, setSaved] = useState(false);
     const { speak } = useVoiceGuidance();
 
+    const [showAnnouncement, setShowAnnouncement] = useState(false);
+    const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+
     const handleAnswer = (dir: Direction) => {
         answer(dir);
     };
@@ -44,6 +47,13 @@ function TestContent() {
                 speak('右目の検査が終わりました。次は左目です。');
             } else {
                 speak('検査が終わりました。お疲れ様でした。');
+                // Show announcement before result
+                setShowAnnouncement(true);
+                const timer = setTimeout(() => {
+                    setShowAnnouncement(false);
+                    // Result will be shown by the render logic below
+                }, 3000);
+                return () => clearTimeout(timer);
             }
         }
     }, [state.isFinished, state.eye, speak]);
@@ -63,6 +73,18 @@ function TestContent() {
         setShowResult(true);
     };
 
+    const handleQuit = () => {
+        setShowQuitConfirm(true);
+    };
+
+    const confirmQuit = () => {
+        router.push('/');
+    };
+
+    const cancelQuit = () => {
+        setShowQuitConfirm(false);
+    };
+
     if (showResult) {
         return (
             <main className="flex min-h-screen flex-col items-center justify-center bg-[#E0F2F7] p-4 font-sans text-[#0093D0]">
@@ -80,6 +102,20 @@ function TestContent() {
         );
     }
 
+    // Result Announcement Screen
+    if (showAnnouncement && state.isFinished && state.eye === 'left') {
+        return (
+            <main className="flex min-h-screen flex-col items-center justify-center bg-[#E0F2F7] p-4 font-sans text-[#0093D0] animate-in fade-in zoom-in duration-500">
+                <div className="text-center space-y-8">
+                    <h1 className="text-6xl font-black text-[#FFD700] drop-shadow-md animate-bounce">
+                        結果発表！！
+                    </h1>
+                    <div className="text-9xl">🎉</div>
+                </div>
+            </main>
+        );
+    }
+
     if (state.isFinished) {
         if (state.eye === 'right') {
             return (
@@ -87,6 +123,9 @@ function TestContent() {
                     <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center space-y-6 border-4 border-[#0093D0]">
                         <h2 className="text-2xl font-bold">右目のおわり！</h2>
                         <p className="text-lg text-gray-700">つぎは左目をかくして、<br />左目でやってみよう</p>
+                        <div className="text-4xl font-bold text-[#0093D0] my-4">
+                            {state.result}
+                        </div>
                         <button
                             onClick={handleNextEye}
                             className="w-full py-4 bg-[#0093D0] hover:bg-[#007bb5] text-white rounded-2xl font-bold text-xl shadow-md transition-transform active:scale-95"
@@ -97,11 +136,15 @@ function TestContent() {
                 </main>
             );
         } else {
+            // Left eye finished (and announcement done)
             return (
                 <main className="flex min-h-screen flex-col items-center justify-center bg-[#E0F2F7] p-4 font-sans text-[#0093D0]">
                     <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center space-y-6 border-4 border-[#0093D0]">
                         <h2 className="text-2xl font-bold">左目のおわり！</h2>
                         <p className="text-lg text-gray-700">これでおしまいです</p>
+                        <div className="text-6xl font-black text-[#0093D0] my-6">
+                            {state.result}
+                        </div>
                         <button
                             onClick={handleFinish}
                             className="w-full py-4 bg-[#0093D0] hover:bg-[#007bb5] text-white rounded-2xl font-bold text-xl shadow-md transition-transform active:scale-95"
@@ -118,12 +161,44 @@ function TestContent() {
     const sizePx = calculateSizePx(currentLevel);
 
     return (
-        <main className="flex min-h-screen flex-col items-center bg-white overflow-hidden font-sans">
+        <main className="flex min-h-screen flex-col items-center bg-white overflow-hidden font-sans relative">
+            {/* Quit Confirmation Modal */}
+            {showQuitConfirm && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-200">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">途中でやめますか？</h3>
+                        <p className="text-gray-600 mb-6">これまでの記録は保存されません。</p>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={cancelQuit}
+                                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200"
+                            >
+                                つづける
+                            </button>
+                            <button
+                                onClick={confirmQuit}
+                                className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600"
+                            >
+                                やめる
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="w-full p-4 flex justify-between items-center bg-[#E0F2F7] text-[#0093D0]">
-                <span className="font-bold text-lg">
-                    {state.eye === 'right' ? '右目 (みぎめ)' : '左目 (ひだりめ)'}
-                </span>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleQuit}
+                        className="text-sm bg-white px-3 py-1 rounded-full shadow-sm text-gray-500 font-bold hover:text-red-500 transition-colors"
+                    >
+                        × 中断
+                    </button>
+                    <span className="font-bold text-lg ml-2">
+                        {state.eye === 'right' ? '右目 (みぎめ)' : '左目 (ひだりめ)'}
+                    </span>
+                </div>
                 <div className="flex items-center gap-2">
                     {isListening && <span className="text-xs bg-red-100 text-red-500 px-2 py-1 rounded-full animate-pulse">音声ON</span>}
                     <span className="text-sm font-bold bg-white px-3 py-1 rounded-full shadow-sm">
